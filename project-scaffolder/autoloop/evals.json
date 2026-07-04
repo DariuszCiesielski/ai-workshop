@@ -1,0 +1,57 @@
+{
+  "skill": "project-scaffolder",
+  "version": "1.0",
+  "evals": [
+    {
+      "prompt": "Stwórz nowy projekt SaaS dla klienta — salon fryzjerski, rezerwacje online",
+      "expected_behaviors": [
+        "Aktywuje skill project-scaffolder z komendą /projekt nowy",
+        "Klonuje AIwBiznesie Launchpad jako bazę",
+        "Pyta o dane: nazwa projektu, domena, Supabase project",
+        "Konfiguruje .env z Supabase URL/keys i Stripe test keys",
+        "Uruchamia chain of skills: credentials-vault → supabase-auth-rls → path-scoped-rules",
+        "NIE używa Stripe live keys — tylko test keys na start",
+        "Sugeruje shared vs dedicated Supabase (dla małego projektu: shared)"
+      ],
+      "anti_patterns": [
+        "Zaczyna kodować bez konfiguracji .env",
+        "Używa Stripe live keys",
+        "Nie pyta o Supabase project (shared vs dedicated)",
+        "Pomija credentials-vault — wkleja klucze bezpośrednio",
+        "Nie sugeruje path-scoped-rules"
+      ]
+    },
+    {
+      "prompt": "Wygeneruj motyw dla projektu na podstawie tej strony: [screenshot landing page w ciemnych barwach]",
+      "expected_behaviors": [
+        "Aktywuje /projekt theme",
+        "Analizuje kolorystykę z referencji (ciemne barwy → dark mode primary)",
+        "Generuje CSS variables / Tailwind v4 @theme config",
+        "Mapuje kolory na design tokens: primary, secondary, accent, background, surface",
+        "Uwzględnia kontrast WCAG (AA minimum)",
+        "Generuje plik z motywem gotowy do użycia"
+      ],
+      "anti_patterns": [
+        "Ignoruje referencję wizualną",
+        "Generuje generyczny motyw bez nawiązania do screenshota",
+        "Nie sprawdza kontrastu WCAG",
+        "Hardcoduje kolory zamiast design tokens"
+      ]
+    },
+    {
+      "prompt": "Zarejestruj ten projekt w Project Master",
+      "expected_behaviors": [
+        "Aktywuje /projekt register",
+        "Generuje project-meta.json z metadanymi (nazwa, stack, status, features)",
+        "Rejestruje w Project Master registry",
+        "Informuje o cross-project gateway (czy potrzebny)",
+        "Wyświetla potwierdzenie z linkiem do Project Master"
+      ],
+      "anti_patterns": [
+        "Nie generuje project-meta.json",
+        "Pomija rejestrację — tylko informuje co zrobić",
+        "Brak potwierdzenia sukcesu"
+      ]
+    }
+  ]
+}

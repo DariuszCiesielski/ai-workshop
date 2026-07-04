@@ -1,0 +1,57 @@
+{
+  "$schema": "Domyślna konfiguracja sekcji pomocy — kopiuj do .help/config.json w projekcie",
+  "language": "pl",
+  "sections": [
+    {
+      "id": "configuration",
+      "label": "Konfiguracja",
+      "component": "ConfigurationHelp",
+      "route": "/help/configuration",
+      "category": "Rozpoczęcie pracy",
+      "enabled": true
+    },
+    {
+      "id": "user-management",
+      "label": "Zarządzanie użytkownikami",
+      "component": "UserManagementHelp",
+      "route": "/help/users",
+      "category": "Administracja",
+      "enabled": true
+    },
+    {
+      "id": "user-flows",
+      "label": "Ścieżki użytkownika",
+      "component": "UserFlowsHelp",
+      "route": "/help/flows",
+      "category": "Użytkowanie",
+      "enabled": true
+    },
+    {
+      "id": "navigation",
+      "label": "Nawigacja",
+      "component": "NavigationHelp",
+      "route": "/help/navigation",
+      "category": "Użytkowanie",
+      "enabled": true
+    },
+    {
+      "id": "faq",
+      "label": "FAQ",
+      "component": "FAQHelp",
+      "route": "/help/faq",
+      "category": "Wsparcie",
+      "enabled": true
+    }
+  ],
+  "style": {
+    "useProjectDesignSystem": true,
+    "showScreenshotPlaceholders": true,
+    "searchEnabled": true,
+    "sidebarPosition": "left",
+    "maxContentWidth": "3xl"
+  },
+  "exclude": {
+    "routes": [],
+    "components": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "skill-optimizer",
+  "editable_files": ["SKILL.md"],
+  "frozen_files": ["autoloop/*"],
+  "evaluate_command": "./autoloop/evaluate.sh",
+  "metric_direction": "maximize",
+  "time_budget_seconds": 300,
+  "max_iterations": 20,
+  "stop_threshold": 0.90,
+  "stagnation_limit": 8,
+  "git_branch": "autoloop/project-scaffolder",
+  "agent_model": "sonnet",
+  "judge_model": "opus"
+}

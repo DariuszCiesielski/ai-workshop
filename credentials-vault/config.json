@@ -1,0 +1,28 @@
+{
+  "auto_load_on_auth_error": true,
+  "mask_display": true,
+  "mask_visible_chars": 3,
+  "chmod_mode": "600",
+  "auto_validate_after_save": true,
+  "log_usage": true,
+  "shared_credentials_path": "~/.claude/shared-credentials.env",
+  "supported_services": [
+    "supabase",
+    "openai",
+    "anthropic",
+    "stripe",
+    "airtable",
+    "elevenlabs",
+    "resend",
+    "cloudinary",
+    "apify",
+    "firecrawl",
+    "google",
+    "facebook",
+    "linkedin",
+    "postiz",
+    "dataforseo",
+    "tavily",
+    "browserbase"
+  ]
+}

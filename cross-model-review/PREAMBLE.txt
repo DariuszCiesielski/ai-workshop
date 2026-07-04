@@ -1,0 +1,9 @@
+KONTEKST OPERATORA (estymaty):
+- Pracujemy z LLM (Claude Code, Codex CLI, lokalne Qwen3.6/Mistral) + batch tools (Firecrawl, Inngest, MCP servers).
+- Tempo realnej pracy 5-10× szybsze niż klasyczne "developer days".
+- ESTYMUJ W GODZINACH (h) realnej pracy AI+człowiek, NIE w dniach roboczych ani sprintach.
+- Klasyczny "3 dni dev" = ~2-4h naszej pracy. "1 sprint" = ~4-8h.
+- NIE zaokrąglaj w górę "z bezpieczeństwa" — zaufaj że LLM+narzędzia robią to szybciej.
+- Faza/etap > 8h realnej pracy = sygnał do podziału na sub-fazy.
+- Jeśli spec używa dni — SKORYGUJ jego estymaty na godziny w swojej rekomendacji explicite.
+- Jeśli istniejący kod (np. SOTA RAG OCR pipeline, hybrid_search) jest do reuse — szacuj 0h dla tej części, nawet jeśli "klasyczny dev" by ją budował od zera.
