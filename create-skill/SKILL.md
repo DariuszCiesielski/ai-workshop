@@ -282,6 +282,31 @@ Po każdym Edit uruchamia `scripts/validate.py` na zmienionym pliku.
 
 ---
 
+## Wzorce jakości treści (adopcja z mattpocock/skills, 2026-08-05)
+
+Skill istnieje po to, by wymusić **przewidywalność procesu** — ten sam przebieg przy każdym uruchomieniu, nie identyczny output. Cztery dźwignie redakcyjne + rachunek kosztu:
+
+### No-op test — usuwaj zdania, które nic nie zmieniają
+Dla każdego zdania: „czy to zmienia zachowanie agenta względem domyślnego?" Jeśli nie („bądź dokładny", „dbaj o jakość") — usuń CAŁE zdanie, nie przycinaj słów. Słaby przymiotnik to też no-op: lekiem jest mocniejsze słowo („nieustępliwie" zamiast „starannie"), nie dodatkowe zdanie.
+
+### Zakazy → pozytywy
+„Nie rób X" przywołuje X i zwiększa jego dostępność (efekt „nie myśl o słoniu"). Formułuj docelowe zachowanie wprost — tak, by zakazane nigdy nie padło. Zakaz zostaw wyłącznie jako twardy guardrail nie do wyrażenia pozytywnie — i zawsze w parze z „co robić zamiast".
+
+### Leading words — słowa-kotwice
+Mocne pojęcie osadzone w pretreningu modelu („fog of war", „tracer bullets", „relentless") niesie całą definicję zachowania w jednym tokenie i kotwiczy je przy każdym wystąpieniu. Szukaj rozwlekłych triad („szybko, deterministycznie, bez narzutu") i zwijaj w jedno mocne słowo („tight loop"). Zysk podwójny: mniej tokenów + ostrzejsza kotwica. Działa też w description — wspólne słowo w promptach usera i skillu podnosi trafność aktywacji.
+
+### Sprawdzalne kryteria ukończenia
+Każdy krok kończy się warunkiem, po którym agent POZNA, że skończył — sprawdzalnym i wyczerpującym: „każdy zmodyfikowany plik rozliczony na liście", nie „przygotuj listę zmian". Mgliste kryterium = przedwczesne „gotowe" (agent kończy krok, bo uwaga ześlizguje się na „być skończonym").
+
+### Context load vs cognitive load — kto płaci za istnienie skilla
+- **Skill widoczny dla modelu** (domyślny): jego `description` siedzi w kontekście KAŻDEJ tury — koszt tokenowy płacony zawsze, także gdy skill nieużywany. Uzasadnione tylko, gdy agent ma sam po niego sięgać.
+- **Skill wywoływany tylko ręcznie**: zero kosztu w oknie, ale to użytkownik musi pamiętać, że istnieje (koszt poznawczy).
+- **Mechanika (zweryfikowane 5.08.2026, `code.claude.com/docs/en/skills.md` → „Control who invokes a skill"):** `disable-model-invocation: true` we frontmatter — opis znika z kontekstu, skill działa tylko przez `/nazwa`; skutki uboczne: brak preloadu do subagentów, nie odpali się ze scheduled taska (od v2.1.196). Odwrotność: `user-invocable: false` (tylko model może wywołać, opis zostaje w kontekście).
+- Gdy ręcznych skilli przybywa ponad pamięć — **router skill**: jeden widoczny skill-spis, który nazywa pozostałe i mówi, kiedy którego użyć.
+- Przy tworzeniu skilla decyzja świadoma: „czy agent MUSI umieć sam to aktywować?" Jeśli nie — kandydat na tryb ręczny.
+
+---
+
 ## Wzorce skilli
 
 ### Wzorzec: Workflow wielofazowy
@@ -445,6 +470,56 @@ Checklista jakości:
 - [ ] Brak informacji wrażliwych na czas
 - [ ] Referencje na jednym poziomie (nie zagnieżdżone)
 
+**Bramki jakości (sekcja „Dwie bramki jakości"):**
+- [ ] Plan skilla pokazany i zaakceptowany PRZED napisaniem pliku
+- [ ] `evals/regresja.md` — listy słów wymaganych i zakazanych (dla skilli wykonujących konkretną robotę)
+
+**Wzorce jakości treści (sekcja wyżej):**
+- [ ] No-op test przeszedł — każde zdanie zmienia zachowanie agenta
+- [ ] Zakazy sformułowane pozytywnie (goły zakaz tylko jako twardy guardrail + „co zamiast")
+- [ ] Kryteria ukończenia kroków sprawdzalne i wyczerpujące
+- [ ] Decyzja context vs cognitive load podjęta świadomie (czy agent musi sam aktywować?)
+
+---
+
+## Ewaluacja skilla (przed ogłoszeniem „gotowy")
+
+Skill bez testów to hipoteza, nie narzędzie. Zanim ogłosisz skill jako gotowy — zmierz, czy realnie poprawia wynik względem agenta BEZ skilla. Metodyka zaadaptowana z oficjalnego `skill-creator` Anthropic (Apache 2.0).
+
+### Kiedy ewaluować (a kiedy nie)
+
+- **Ewaluuj**: skille z obiektywnie weryfikowalnym wynikiem (transformacje plików, ekstrakcja danych, generowanie kodu, sztywne workflow) oraz każdy skill używany w wielu projektach.
+- **Pomiń pełną ewaluację**: skille czysto subiektywne (styl pisania, estetyka) — tam wystarczy przegląd wyników przez Dariusza; oraz drobne skille jednorazowe.
+
+### Pętla ewaluacyjna (5 kroków)
+
+1. **Napisz 3-5 test cases** w `<skill>/evals/evals.json` — realistyczne prompty, jakie Dariusz naprawdę by wpisał (z kontekstem, ścieżkami, literówkami — nie sterylne „zrób X"). Każdy case: `prompt`, `expected_output`, `assertions` (obiektywnie sprawdzalne oczekiwania).
+2. **Uruchom pary run-ów przez Agent tool** — dla każdego case DWA subagenty w tej samej turze: jeden z instrukcją „przeczytaj skill <ścieżka> i wykonaj zadanie", drugi BEZ skilla (baseline). Przy ulepszaniu istniejącego skilla baseline = snapshot starej wersji. Wyniki do `<skill>-workspace/iteration-N/eval-<id>/{with_skill,without_skill}/`.
+3. **Oceń agentem-graderem** — osobny subagent dostaje asercje + outputy obu run-ów i zwraca per asercja: `passed` (true/false) + `evidence` (cytat/dowód). Zasada: przy wątpliwości FAIL — ciężar dowodu leży po stronie asercji. Grader ma też krytykować same asercje (asercja trywialnie spełnialna = fałszywe zaufanie). Pełny prompt gradera: [references/ewaluacja.md](references/ewaluacja.md).
+4. **Porównaj z baseline** — policz pass rate obu konfiguracji. **Próg akceptacji: with-skill ≥ 80% asercji ORAZ wyraźnie lepiej niż baseline.** Jeśli baseline wypada równie dobrze — skill nie wnosi wartości: uprość go albo skasuj. Weryfikuj ARTEFAKTY na dysku, nie deklaracje agentów (§27.5).
+5. **Iteruj** — popraw skill na podstawie porażek, przerun WSZYSTKIE case'y do `iteration-N+1/`, porównaj z poprzednią iteracją. Stop gdy: próg osiągnięty, Dariusz zadowolony, albo brak postępu przez 2 iteracje.
+
+### Zasady poprawiania po ewaluacji
+
+- **Generalizuj z feedbacku** — skill ma działać na tysiącu promptów, nie na 3 testowych. Nie dopisuj overfitowanych „MUSISZ" pod konkretny case.
+- **Odchudzaj** — czytaj transkrypty run-ów: jeśli skill każe agentowi robić coś bezproduktywnego, wytnij to i sprawdź czy wynik się pogorszył.
+- **Powtarzalna praca w run-ach = kandydat na skrypt** — jeśli każdy subagent sam pisał podobny helper, przenieś go do `scripts/` skilla.
+
+### Optymalizacja `description` pod triggering
+
+Skill, który się nie aktywuje, nie istnieje. Po ustabilizowaniu treści:
+
+1. Napisz ~10-20 zapytań testowych: połowa **powinna** aktywować skill (różne sformułowania, casual, bez nazwy skilla), połowa **NIE powinna** — i te negatywne mają być **near-miss** (wspólne słowa kluczowe, ale inna potrzeba), nie oczywiście nietrafione.
+2. Dla każdego zapytania oceń (subagentem z listą skilli w prompcie), czy skill zostałby wybrany. Porażki → przeredaguj description.
+3. Do description dopisz **anty-triggery**: „NIE używaj do X (→ skill Y)" — najskuteczniejszy lek na fałszywe aktywacje między podobnymi skillami.
+4. Pamiętaj: Claude ma tendencję do **niedo-aktywowania** skilli — description może być lekko „nachalne" (wymień sytuacje, w których użyć, nawet gdy user nie nazywa skilla wprost).
+
+### Pułapka główna
+
+Proste, jednokrokowe zapytania („przeczytaj ten PDF") NIE aktywują skilli niezależnie od jakości description — Claude sięga po skille tylko przy zadaniach, przy których sam by sobie łatwo nie poradził. Test cases muszą być na tyle treściwe, żeby skill realnie pomagał.
+
+**Pełna instrukcja operacyjna** (format test case'a, prompt gradera, schemat JSON wyników, porównanie ślepe A/B): [references/ewaluacja.md](references/ewaluacja.md)
+
 ---
 
 ## Mierzenie skuteczności skilli
@@ -483,6 +558,18 @@ Po zakończeniu sesji, agent powinien:
 2. Jeśli tak → wygenerować draft SKILL.md z wzorca
 3. Zaproponować użytkownikowi: "Zauważyłem powtarzający się wzorzec X. Stworzyć skill?"
 4. Po zatwierdzeniu → pipeline: create → test (dry run) → deploy do ~/.claude/skills/
+
+### Dwie bramki jakości (adopcja z microsoft/skill-recorder, pilot-lite 2026-08-05)
+
+**1. Plan przed plikiem.** Nie generuj od razu gotowego `SKILL.md`. Najpierw pokaż Dariuszowi krótki plan: co skill ma robić, co uogólniamy z jednorazowego przypadku do procedury, które wartości stają się parametrami. Plik powstaje dopiero po akceptacji planu. Powód: poprawianie planu kosztuje zdanie, poprawianie gotowego skilla — całą rundę czytania.
+
+**2. Test regresji bez modelu.** Każdy skill wykonujący konkretną robotę dostaje listę kontrolną w `evals/regresja.md`:
+- **Słowa WYMAGANE** — muszą wystąpić w wyniku (np. nazwa właściwego narzędzia, format daty, wymagana sekcja).
+- **Słowa ZAKAZANE** — ich wystąpienie to natychmiastowa porażka, bez dyskusji (np. narzędzie, którego skill ma NIE używać; angielskie zwroty w polskim deliverable; `TODO`).
+
+Sprawdzenie to `grep`/Python na wyniku — zero wywołań modelu, więc kosztuje ułamek grosza i można je puszczać po każdej zmianie skilla. U autorów wzorca dokładnie to złapało cichą regresję: skill zaczął sięgać po przeglądarkę zamiast właściwego narzędzia wiersza poleceń, a wynik nadal wyglądał poprawnie.
+
+**Dlaczego to działa:** wykrywa pogorszenia, których ocena „na oko" nie widzi, bo wynik wygląda sensownie. Uzupełnia pełną ewaluację (sekcja niżej) — tamta mierzy JAKOŚĆ na próbce, ta pilnuje TWARDYCH granic przy każdej zmianie.
 
 ### Kiedy uruchomić auto-wykrywanie
 

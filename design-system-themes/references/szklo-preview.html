@@ -1,0 +1,316 @@
+<title>Motyw Szkło</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ============================================================
+   MOTYW „SZKŁO" — glassmorphism, monospace-forward
+   Wartości tokenów oryginalne. Zieleń usunięta w całości
+   (akcent I semantyka). Akcent wymienny (przełącznik u góry).
+   ============================================================ */
+
+/* ---- JASNY (domyślny) ---- */
+:root{
+  --ground:#E7EBF3;
+  --b1:#c9d6ef; --b2:#e6d7f0; --b3:#d3e6f2;   /* barwy poświaty pod szkłem */
+  --glass:rgba(255,255,255,.55);
+  --glass-2:rgba(255,255,255,.42);
+  --glass-brd:rgba(255,255,255,.85);
+  --glass-hi:rgba(255,255,255,.9);
+  --ink:#1B2431;
+  --ink-2:#46566B;
+  --ink-3:#7d8ba1;
+  --line:rgba(20,32,54,.10);
+  --line-2:rgba(20,32,54,.06);
+  --data-a:#2F82D6;                 /* dane — niebieski */
+  --data-b:#C43B86;                 /* dane — magenta */
+  --data-a-wash:rgba(47,130,214,.14);
+  --grid:rgba(30,50,80,.07);
+  --pos:#2E86D8;                    /* semantyka „dobry" = niebieski, NIE zielony */
+  --warn:#C4801A;
+  --crit:#D2443F;
+  --shadow:0 2px 8px rgba(20,30,55,.08),0 14px 40px rgba(20,30,55,.10);
+  --blur:18px;
+  /* akcent domyślny: INDYGO */
+  --accent:#5A63E6; --on-accent:#fff; --accent-ink:#3b43c0;
+  --r-card:18px; --r-pill:999px; --r-sm:10px;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+/* ---- CIEMNY (tokeny) ---- */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#070A11;
+  --b1:#2b3a7a; --b2:#5a2f70; --b3:#1f4a70;
+  --glass:rgba(24,31,46,.55);
+  --glass-2:rgba(20,27,41,.42);
+  --glass-brd:rgba(255,255,255,.12);
+  --glass-hi:rgba(255,255,255,.18);
+  --ink:#E7EDF6;
+  --ink-2:#AAB7CA;
+  --ink-3:#6a7a92;
+  --line:rgba(255,255,255,.10);
+  --line-2:rgba(255,255,255,.055);
+  --data-a:#5BA6E8; --data-b:#E86BB0;
+  --data-a-wash:rgba(91,166,232,.16);
+  --grid:rgba(255,255,255,.06);
+  --pos:#4AA3EC; --warn:#E0A23A; --crit:#F0605B;
+  --shadow:0 2px 10px rgba(0,0,0,.35),0 18px 48px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --ground:#070A11; --b1:#2b3a7a; --b2:#5a2f70; --b3:#1f4a70;
+  --glass:rgba(24,31,46,.55); --glass-2:rgba(20,27,41,.42);
+  --glass-brd:rgba(255,255,255,.12); --glass-hi:rgba(255,255,255,.18);
+  --ink:#E7EDF6; --ink-2:#AAB7CA; --ink-3:#6a7a92;
+  --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.055);
+  --data-a:#5BA6E8; --data-b:#E86BB0; --data-a-wash:rgba(91,166,232,.16);
+  --grid:rgba(255,255,255,.06); --pos:#4AA3EC; --warn:#E0A23A; --crit:#F0605B;
+  --shadow:0 2px 10px rgba(0,0,0,.35),0 18px 48px rgba(0,0,0,.5);
+}
+
+/* ---- akcenty wymienne (tylko --accent*) ---- */
+:root[data-accent="fiolet"]{--accent:#8B5CF6;--on-accent:#fff;--accent-ink:#6d3ff0}
+:root[data-accent="bursztyn"]{--accent:#E0912E;--on-accent:#231204;--accent-ink:#a9660f}
+:root[data-accent="blekit"]{--accent:#2E97E6;--on-accent:#fff;--accent-ink:#1e73bb}
+:root[data-theme="dark"][data-accent="bursztyn"]{--accent:#EDA845;--accent-ink:#f0c07e}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;font-family:var(--mono);color:var(--ink);
+  background:var(--ground);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;position:relative;min-height:100vh;
+}
+/* poświata pod szkłem — daje szkłu co refraktować */
+.bg{position:fixed;inset:-10%;z-index:-1;overflow:hidden;pointer-events:none}
+.bg span{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.bg .s1{width:46vw;height:46vw;left:-6vw;top:-8vw;background:radial-gradient(circle,var(--accent),transparent 62%)}
+.bg .s2{width:42vw;height:42vw;right:-8vw;top:6vw;background:radial-gradient(circle,var(--b2),transparent 62%)}
+.bg .s3{width:52vw;height:52vw;left:22vw;bottom:-22vw;background:radial-gradient(circle,var(--b1),transparent 60%)}
+:root[data-theme="dark"] .bg span,:root:not([data-theme="light"]) .bg span{opacity:.4}
+
+h1,h2{font-family:var(--sans);font-weight:750;letter-spacing:-.02em;text-wrap:balance;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px 72px}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin:0}
+
+/* glass mixin -> class .g */
+.g{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(150%);
+  backdrop-filter:blur(var(--blur)) saturate(150%);
+  border:1px solid var(--glass-brd);
+  box-shadow:var(--shadow),inset 0 1px 0 var(--glass-hi);
+}
+
+/* top bar */
+.topbar{display:flex;align-items:center;gap:14px;max-width:1120px;margin:0 auto;padding:18px 20px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--sans);font-weight:800;letter-spacing:.02em;font-size:15px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+.brand .sub{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+.spacer{flex:1}
+.swatches{display:flex;gap:6px;align-items:center;padding:5px 8px;border-radius:var(--r-pill)}
+.swatches button{width:18px;height:18px;border-radius:50%;border:2px solid var(--glass-brd);cursor:pointer;padding:0;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.swatches button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.swatches button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ground),0 0 0 4px currentColor}
+.userchip{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);border-radius:var(--r-pill);padding:7px 12px}
+.userchip .av{width:16px;height:16px;border-radius:50%;background:color-mix(in srgb,var(--accent) 30%,transparent);border:1px solid var(--accent);flex:none}
+.tgl{font-family:var(--mono);font-size:12px;color:var(--ink);border-radius:var(--r-pill);padding:7px 13px;cursor:pointer;display:flex;align-items:center;gap:7px}
+.tgl:hover{border-color:var(--accent)}
+.tgl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* nav */
+.nav{display:flex;gap:6px;max-width:1120px;margin:0 auto;padding:0 20px 8px;flex-wrap:wrap}
+.nav a{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-2);text-decoration:none;padding:9px 13px;border-radius:var(--r-sm)}
+.nav a .gl{width:15px;height:15px;opacity:.75}
+.nav a.active{color:var(--ink);background:color-mix(in srgb,var(--accent) 16%,transparent);font-weight:600;border:1px solid color-mix(in srgb,var(--accent) 34%,transparent)}
+.nav a.active .gl{opacity:1;color:var(--accent-ink)}
+.nav a:not(.active):hover{color:var(--ink);background:var(--line-2)}
+
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:26px 0 4px;flex-wrap:wrap}
+.head h1{font-size:30px;margin-top:6px}
+.stamp{font-size:11px;color:var(--ink-2);border-radius:var(--r-pill);padding:6px 12px;white-space:nowrap}
+
+.controls{display:flex;align-items:center;gap:12px;margin:16px 0 22px;flex-wrap:wrap;color:var(--ink-3);font-size:11px;letter-spacing:.04em}
+.seg{display:inline-flex;border-radius:var(--r-pill);padding:3px}
+.seg button{font-family:var(--mono);font-size:12px;color:var(--ink-2);background:none;border:0;padding:6px 14px;border-radius:var(--r-pill);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:600}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{border-radius:var(--r-card);padding:18px 18px 16px}
+.klabel{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.klabel .sp{color:var(--accent);font-size:12px}
+.knum{font-size:30px;font-weight:600;letter-spacing:-.01em;margin:10px 0 4px;font-variant-numeric:tabular-nums}
+.knum small{font-size:15px;color:var(--ink-3);font-weight:500}
+.delta{font-size:12px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px}
+.delta.up{color:var(--pos)} .delta.down{color:var(--crit)}
+.kcap{font-size:11px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.spark{margin-top:14px;width:100%;height:34px;display:block}
+
+.panel{border-radius:var(--r-card);padding:20px;margin-top:16px}
+.panel h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-family:var(--mono);font-weight:600;display:flex;align-items:center;gap:7px}
+.panel h2 .sp{color:var(--accent)}
+.psub{font-size:11px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;margin:4px 0 0}
+.chart{width:100%;height:230px;margin-top:12px;display:block;overflow:visible}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-top:6px;justify-content:center}
+.legend i{display:inline-block;width:16px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
+.foot{color:var(--ink-3);font-size:11.5px;line-height:1.6;margin-top:12px}
+
+.tblwrap{overflow-x:auto;margin-top:16px;border-radius:var(--r-card)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:560px}
+caption{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding:18px 20px 6px}
+th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500;text-align:right;padding:10px 20px}
+th:first-child{text-align:left}
+td{font-size:13px;padding:13px 20px;text-align:right;border-top:1px solid var(--line-2);color:var(--ink)}
+td:first-child{text-align:left}
+tbody tr:hover{background:var(--line-2)}
+.rowname{display:flex;flex-direction:column;gap:2px}
+.rowname b{font-weight:600}
+.rowname span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.chev{color:var(--accent-ink);font-weight:600}
+.muted0{color:var(--ink-3)}
+tr.sum td{border-top:1px solid var(--line);font-weight:600;background:var(--line-2)}
+
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.chip{font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:7px}
+.chip .d{width:6px;height:6px;border-radius:50%}
+.chip.ok{color:var(--pos);background:color-mix(in srgb,var(--pos) 15%,transparent)} .chip.ok .d{background:var(--pos)}
+.chip.wip{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)} .chip.wip .d{background:var(--warn)}
+
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.tile{border-radius:16px;padding:16px}
+.tile .ic{width:34px;height:34px;border-radius:9px;background:color-mix(in srgb,var(--accent) 18%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);display:flex;align-items:center;justify-content:center;color:var(--accent-ink);font-size:15px}
+.tile h3{font-family:var(--sans);font-size:15px;font-weight:700;margin:12px 0 4px}
+.tile p{margin:0 0 12px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+
+.secttl{margin:34px 0 2px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+footer{max-width:1120px;margin:40px auto 0;padding:22px 20px 0;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px;line-height:1.6}
+footer b{color:var(--ink-2);font-weight:600}
+
+@media (max-width:840px){.grid{grid-template-columns:repeat(2,1fr)}.tiles{grid-template-columns:1fr}.head h1{font-size:24px}}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.tgl,.nav a,.seg button,.tile,.swatches button{transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+</style>
+
+<div class="bg" aria-hidden="true"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span>SZKŁO<span class="sub">Motyw&nbsp;·&nbsp;podgląd</span></div>
+  <div class="spacer"></div>
+  <div class="swatches g" role="group" aria-label="Kolor akcentu">
+    <button data-a="indygo" aria-pressed="true" style="background:#5A63E6" title="Indygo"></button>
+    <button data-a="fiolet" aria-pressed="false" style="background:#8B5CF6" title="Fiolet"></button>
+    <button data-a="blekit" aria-pressed="false" style="background:#2E97E6" title="Błękit"></button>
+    <button data-a="bursztyn" aria-pressed="false" style="background:#E0912E" title="Bursztyn"></button>
+  </div>
+  <button class="tgl g" id="tgl" aria-label="Przełącz tryb jasny/ciemny"><span id="tglIcon">☾</span> <span id="tglTxt">Ciemny</span></button>
+  <div class="userchip g">panel@aiwbiznesie.pl</div>
+</header>
+
+<nav class="nav" aria-label="Sekcje">
+  <a href="#" class="active"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Przegląd</a>
+  <a href="#"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12l4-4 3 3 5-6"/><path d="M14 5v3h-3"/></svg>Marketing</a>
+  <a href="#"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12"/></svg>Dane</a>
+  <a href="#"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/><circle cx="8" cy="8" r="2.4"/></svg>Ustawienia</a>
+</nav>
+
+<div class="wrap">
+  <div class="head">
+    <div><p class="eyebrow">Przegląd portfela</p><h1>Panel operacyjny</h1></div>
+    <span class="stamp g">Dane na 16.08, 11:20</span>
+  </div>
+
+  <div class="controls">
+    <div class="seg g" role="group" aria-label="Waluta"><button aria-pressed="true">PLN</button><button aria-pressed="false">USD</button></div>
+    <span>okno&nbsp;·&nbsp;bieżący&nbsp;miesiąc&nbsp;·&nbsp;porównanie do poprzedniego</span>
+  </div>
+
+  <div class="grid">
+    <div class="card g">
+      <div class="klabel"><span class="sp">✳</span>Przychód (PLN)</div>
+      <div class="knum">731,7&nbsp;<small>tys. zł</small></div>
+      <div class="delta down">▾ −12,0% vs poprzedni</div><div class="kcap">do 15.08</div>
+      <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><g fill="var(--accent)"><rect x="2" y="20" width="6" height="14" rx="1"/><rect x="12" y="16" width="6" height="18" rx="1"/><rect x="22" y="22" width="6" height="12" rx="1"/><rect x="32" y="12" width="6" height="22" rx="1"/><rect x="42" y="18" width="6" height="16" rx="1"/><rect x="52" y="10" width="6" height="24" rx="1"/><rect x="62" y="14" width="6" height="20" rx="1"/><rect x="72" y="8" width="6" height="26" rx="1"/><rect x="82" y="6" width="6" height="28" rx="1"/><rect x="92" y="11" width="6" height="23" rx="1"/><rect x="102" y="4" width="6" height="30" rx="1"/></g><rect x="112" y="2" width="6" height="32" rx="1" fill="var(--data-a)"/></svg>
+    </div>
+    <div class="card g">
+      <div class="klabel"><span class="sp">✳</span>Aktywni klienci</div>
+      <div class="knum">88</div>
+      <div class="delta down">▾ −15,4% vs poprzedni</div><div class="kcap">do 15.08</div>
+      <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><g fill="var(--accent)"><rect x="2" y="10" width="6" height="24" rx="1"/><rect x="12" y="8" width="6" height="26" rx="1"/><rect x="22" y="14" width="6" height="20" rx="1"/><rect x="32" y="12" width="6" height="22" rx="1"/><rect x="42" y="18" width="6" height="16" rx="1"/><rect x="52" y="16" width="6" height="18" rx="1"/><rect x="62" y="20" width="6" height="14" rx="1"/><rect x="72" y="17" width="6" height="17" rx="1"/><rect x="82" y="22" width="6" height="12" rx="1"/><rect x="92" y="19" width="6" height="15" rx="1"/><rect x="102" y="24" width="6" height="10" rx="1"/></g><rect x="112" y="21" width="6" height="13" rx="1" fill="var(--data-a)"/></svg>
+    </div>
+    <div class="card g">
+      <div class="klabel"><span class="sp">✳</span>Koszt obsługi</div>
+      <div class="knum">104,1&nbsp;<small>tys. zł</small></div>
+      <div class="delta down">▴ +19,1% vs poprzedni</div><div class="kcap">koszt rośnie = źle</div>
+      <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><g fill="var(--accent)"><rect x="2" y="24" width="6" height="10" rx="1"/><rect x="12" y="22" width="6" height="12" rx="1"/><rect x="22" y="20" width="6" height="14" rx="1"/><rect x="32" y="21" width="6" height="13" rx="1"/><rect x="42" y="16" width="6" height="18" rx="1"/><rect x="52" y="17" width="6" height="17" rx="1"/><rect x="62" y="12" width="6" height="22" rx="1"/><rect x="72" y="13" width="6" height="21" rx="1"/><rect x="82" y="9" width="6" height="25" rx="1"/><rect x="92" y="10" width="6" height="24" rx="1"/><rect x="102" y="6" width="6" height="28" rx="1"/></g><rect x="112" y="4" width="6" height="30" rx="1" fill="var(--data-b)"/></svg>
+    </div>
+    <div class="card g">
+      <div class="klabel"><span class="sp">✳</span>Marża</div>
+      <div class="knum">627,6&nbsp;<small>tys. zł</small></div>
+      <div class="delta down">▾ −15,6% vs poprzedni</div><div class="kcap">przychód − koszt</div>
+      <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" aria-hidden="true"><g fill="var(--accent)"><rect x="2" y="18" width="6" height="16" rx="1"/><rect x="12" y="14" width="6" height="20" rx="1"/><rect x="22" y="19" width="6" height="15" rx="1"/><rect x="32" y="11" width="6" height="23" rx="1"/><rect x="42" y="16" width="6" height="18" rx="1"/><rect x="52" y="9" width="6" height="25" rx="1"/><rect x="62" y="13" width="6" height="21" rx="1"/><rect x="72" y="15" width="6" height="19" rx="1"/><rect x="82" y="12" width="6" height="22" rx="1"/><rect x="92" y="17" width="6" height="17" rx="1"/><rect x="102" y="14" width="6" height="20" rx="1"/></g><rect x="112" y="20" width="6" height="14" rx="1" fill="var(--data-a)"/></svg>
+    </div>
+  </div>
+
+  <div class="panel g">
+    <h2><span class="sp">✳</span>Wydatki ↔ przychód w czasie</h2>
+    <p class="psub">Tygodniowo · pytanie: czy różnica rośnie czy się kurczy</p>
+    <svg class="chart" viewBox="0 0 600 210" preserveAspectRatio="none" role="img" aria-label="Wykres liniowy: przychód rośnie i pozostaje powyżej wydatków przez cały okres.">
+      <line x1="0" y1="40" x2="600" y2="40" stroke="var(--grid)"/><line x1="0" y1="90" x2="600" y2="90" stroke="var(--grid)"/><line x1="0" y1="140" x2="600" y2="140" stroke="var(--grid)"/><line x1="0" y1="188" x2="600" y2="188" stroke="var(--line)"/>
+      <path d="M20,120 L140,96 L260,74 L380,58 L500,50 L560,46 L560,188 L20,188 Z" fill="var(--data-a-wash)"/>
+      <path d="M20,120 L140,96 L260,74 L380,58 L500,50 L560,46" fill="none" stroke="var(--data-a)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20,108 L140,102 L260,92 L380,80 L500,70 L560,64" fill="none" stroke="var(--ink-3)" stroke-width="1.6" stroke-dasharray="2 5" stroke-linecap="round"/>
+      <path d="M20,158 L140,156 L260,154 L380,152 L500,150 L560,149" fill="none" stroke="var(--data-b)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="560" cy="46" r="6" fill="var(--data-a)" opacity="0.18"/><circle cx="560" cy="46" r="3.4" fill="var(--data-a)"/>
+    </svg>
+    <div class="legend"><span><i style="border-color:var(--data-a)"></i>Przychód</span><span><i style="border-color:var(--ink-3);border-top-style:dashed"></i>Poprzedni okres</span><span><i style="border-color:var(--data-b)"></i>Wydatki</span></div>
+    <p class="foot">Linia przerywana = przychód okresu porównawczego, tygodnie wyrównane po kolejności. Każdy wykres tłumaczy się sam — konwencja treści z tego motywu.</p>
+  </div>
+
+  <div class="tblwrap g">
+    <table>
+      <caption>Porównanie segmentów · wybrany okres</caption>
+      <thead><tr><th>Segment</th><th>Przychód</th><th>Udział</th><th>Klienci</th><th>Konwersja</th><th>Śr. wartość</th></tr></thead>
+      <tbody>
+        <tr><td><span class="rowname"><b>Doradztwo <span class="chev">›</span></b><span>PLN</span></span></td><td>413,6&nbsp;tys. zł</td><td>57%</td><td>52</td><td>4,55%</td><td>8,0&nbsp;tys. zł</td></tr>
+        <tr><td><span class="rowname"><b>Wdrożenia <span class="chev">›</span></b><span>PLN</span></span></td><td>221,0&nbsp;tys. zł</td><td>30%</td><td>24</td><td>2,10%</td><td>9,2&nbsp;tys. zł</td></tr>
+        <tr><td><span class="rowname"><b>Utrzymanie <span class="chev">›</span></b><span>PLN</span></span></td><td>63,5&nbsp;tys. zł</td><td>9%</td><td>34</td><td>1,80%</td><td>1,9&nbsp;tys. zł</td></tr>
+        <tr><td><span class="rowname"><b>Szkolenia <span class="chev">›</span></b><span>PLN</span></span></td><td class="muted0">33,6&nbsp;tys. zł</td><td class="muted0">4%</td><td>15</td><td>0,72%</td><td>2,2&nbsp;tys. zł</td></tr>
+        <tr class="sum"><td>Portfel</td><td>731,7&nbsp;tys. zł</td><td>100%</td><td>125</td><td>2,84%</td><td>5,9&nbsp;tys. zł</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="secttl">Stany i moduły</p>
+  <div class="chips">
+    <span class="chip ok g"><span class="d"></span>Działa</span>
+    <span class="chip wip g"><span class="d"></span>W przygotowaniu</span>
+    <span class="chip ok g"><span class="d"></span>Synchronizacja OK</span>
+  </div>
+
+  <div class="tiles">
+    <div class="tile g"><div class="ic">◧</div><h3>Przegląd portfela</h3><p>Wszystkie segmenty na jednym ekranie, porównania okresów i konwersja.</p><span class="chip ok"><span class="d"></span>Działa</span></div>
+    <div class="tile g"><div class="ic">◔</div><h3>Analityka marketingowa</h3><p>Wydatki reklamowe wobec przychodu, koszt krańcowy, ROAS.</p><span class="chip ok"><span class="d"></span>Działa</span></div>
+    <div class="tile g"><div class="ic">◈</div><h3>Ocena rozmów</h3><p>Wnioski z nagrań bez odsłuchiwania każdej rozmowy z osobna.</p><span class="chip wip"><span class="d"></span>W przygotowaniu</span></div>
+  </div>
+
+  <footer>
+    <p><b>Motyw „Szkło".</b> Rdzeń = glassmorphism: przezroczyste panele z rozmyciem tła (frost), świetlna ramka u góry, poświata barwna pod spodem, żeby szkło miało co refraktować. Sygnatura typograficzna monospace zachowana. <b>Zieleń usunięta w całości</b> — z akcentu i z semantyki (wzrost dobry = niebieski, nie zielony). Akcent wymienny u góry: indygo / fiolet / błękit / bursztyn.</p>
+    <p style="margin-top:8px">Po akceptacji koloru: tokeny wchodzą do <b>unified-design-system</b> jako motyw „Szkło", mapowane na zmienne shadcn/ui, akcent jako parametr. Marka neutralna — to nasz motyw, nie odbitka cudzej aplikacji.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement,btn=document.getElementById('tgl'),
+      icon=document.getElementById('tglIcon'),txt=document.getElementById('tglTxt');
+  function eff(){var t=root.getAttribute('data-theme');return t?t:(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');}
+  function paint(){var dark=eff()==='dark';icon.textContent=dark?'☀':'☾';txt.textContent=dark?'Jasny':'Ciemny';}
+  btn.addEventListener('click',function(){root.setAttribute('data-theme',eff()==='dark'?'light':'dark');paint();});
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',paint);
+  document.querySelectorAll('.swatches button').forEach(function(b){
+    b.addEventListener('click',function(){
+      root.setAttribute('data-accent',b.getAttribute('data-a'));
+      document.querySelectorAll('.swatches button').forEach(function(x){x.setAttribute('aria-pressed', x===b?'true':'false');});
+    });
+  });
+  paint();
+})();
+</script>

@@ -24,7 +24,7 @@ Pisze testy E2E Playwright dla aplikacji SaaS na stacku Next.js/Vite + Supabase 
 
 - **Opcjonalne:** `supabase-auth-rls` → wzorce auth do testowania
 - **Opcjonalne:** `analytics-tracking` → weryfikacja eventów w testach
-- **Opcjonalne:** `playwright-expert` → zaawansowane wzorce Playwright (built-in skill)
+- **Opcjonalne:** plugin `playwright` (narzędzia MCP `browser_*`) → ręczne sprawdzenie strony w przeglądarce przed spisaniem testu
 
 ## Setup projektu
 

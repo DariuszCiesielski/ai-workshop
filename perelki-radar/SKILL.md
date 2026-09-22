@@ -69,6 +69,25 @@ Trzy osie 1-10 (null jeśli n/a):
 | T6 | `inspiration`+nota | ≥6 | Archived + MIT/Apache → fork-candidate (zapisz w decyzja_powod) |
 | T7 | `inspiration`+nota | n/a | Prawne ryzyko AS-IS → ZAWSZE paruj z legal angle w product_angle_pl |
 
+### 5.1 ZAPORA: T1/T2 bez warunku powrotu NIE WCHODZI do bazy (dodane 2026-07-31)
+
+**Każdy wpis z `tier` = `adopt` albo `pilot` MUSI mieć wypełnione `trigger_reopen`** — konkretny, sprawdzalny warunek („kiedy do tego wracamy"). Bez niego nie zapisuj: dopisz warunek albo zdegraduj do `watch`.
+
+**Dlaczego to twarda reguła, nie zalecenie.** Pomiar z 29-31.07: w bazie leżało **495 pozycji T1/T2 „do-zbadania", z czego 361 bez warunku powrotu, a 319 czekało dłużej niż dwa miesiące**. Samych T1 „adopt" — 165, w tym `open-webui` (136 tys. ⭐) i `anthropics/skills` (130 tys. ⭐) od 8 maja. Kolumna `trigger_reopen` istniała od początku; nikt jej nie wypełniał, bo nic tego nie wymuszało. To ta sama choroba, którą w backlogu wyleczyła obowiązkowa linia EFEKT (§37): **etykieta bez warunku wyjścia to odłożenie decyzji, nie decyzja.**
+
+Warunek ma być sprawdzalny, nie życzeniowy:
+- ❌ „gdy będzie potrzeba", „przy okazji", „kiedy znajdziemy czas"
+- ✅ „przy następnym audycie SEO klienta", „gdy padnie transkrypcja w Daily Intel", „gdy klient poprosi o obsługę WhatsAppem"
+
+**Kontrola przed zapisem partii:** jeśli którykolwiek wiersz ma `tier in ('adopt','pilot')` i pusty `trigger_reopen` — popraw PRZED wykonaniem INSERT-a. Po zapisie zweryfikuj:
+```sql
+select repo_owner||'/'||repo_name from perelki
+where discovered_date = '<dziś>' and tier in ('adopt','pilot') and coalesce(trigger_reopen,'')='';
+-- oczekiwane: 0 wierszy
+```
+
+**Odpływ jest po drugiej stronie:** stare T1 wracają po 2 dziennie w porannym przeglądzie (skill `resume-work` §7.1). Ta zapora pilnuje, żeby stos nie narastał szybciej, niż topnieje.
+
 **Nigdy SKIP.** "nie pasuje do stacku"→watch. "brak licencji"→inspiration (zbuduj własne, nie kopiuj kodu). "archived+bugs"→inspiration/fork-candidate. "awesome-list"→reference. "prawne ryzyko"→inspiration+legal angle. Gdy max=null/niepewny → **zapytaj Dariusza case-by-case**, nie zgaduj.
 
 ### 6. Zapis do `perelki` (schemat niżej) — partiami ≤6 wierszy
@@ -94,7 +113,7 @@ Wartości enum (trzymaj się ich):
 
 ## Kontekst ekosystemu do oceny fit (linie aktywne)
 - **CYBERSEC** — lead magnet (pasywny skaner + szkolenie live), upsell "Przegląd Praktyk Bezpieczeństwa" (NIE "pentest"/"audyt" bez certów CISSP/OSCP = liability, Lessons 27.05). Silnik: Strix (T2-pilot).
-- **SOTA RAG legal** (klient ClientB) — anty-halucynacja, weryfikowalne cytowania, lokalny/RODO, długie akta. Powiązane: PageIndex, Nemotron, Cohere.
+- **SOTA RAG legal** (ClientB) — anty-halucynacja, weryfikowalne cytowania, lokalny/RODO, długie akta. Powiązane: PageIndex, Nemotron, Cohere.
 - **Daily Machine** — fabryka narzędzi-dowodów (`narzedzia-ai.vercel.app`).
 - **Dev tools / workflow Claude Code** — skille, onboarding do ~60 projektów, Analizator repozytoriów.
 - **Voiceboty / agenci AIWB** — pamięć, ElevenLabs. **Lead Generator / CRM** — outbound, enrichment.
@@ -128,6 +147,9 @@ Pominięcie skanu kont = niekompletna analiza (08.06: 4 z 13 perełek pochodził
 
 ### 9. Kolumna `forks` NIE istnieje w `perelki`
 `fetch-meta.sh` zwraca `forks`, ale tabela go nie ma → INSERT/UPDATE z `forks=` rzuca `ERROR: column "forks" does not exist` (14.06). Pomiń forks przy zapisie (to metryka tylko do oceny, nie do bazy).
+
+### 10. Repo ze skanu kont (krok 4) NIE są zdedupowane w kroku 2 → duplicate key wywala partię
+Dedup w kroku 2 obejmuje tylko slugi z paczki. Repo wyłowione w kroku 4 (skan kont) mogą już być w bazie z wcześniejszego audytu → INSERT rzuci `duplicate key value violates unique constraint "perelki_repo_owner_repo_name_key"` i cofnie CAŁĄ partię (transakcja). **Po skanie kont zrób DRUGI dedup** dla wyłowionych repo PRZED zapisem; trafienia → UPDATE. (Lekcja 07.07: calesthio/Crucix ze skanu był w bazie od 08.05, wywalił partię D.)
 
 ## Powiązane
 - §35 globalnego CLAUDE.md (pełna definicja T1-T7, scoring) · `feedback_skanuj_pelne_konto_autora.md` · `feedback_low_stars_not_low_value.md`

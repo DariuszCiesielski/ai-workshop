@@ -1,6 +1,6 @@
 ---
 name: unified-design-system
-description: Hub globalnego systemu designu — 6 motywów, ThemeContext, UserMenu, shadcn mapping, checklisty. Rozdzielony na 3 sub-skille. Używaj przy pytaniach ogólnych o design system lub gdy nie wiesz którego sub-skilla użyć.
+description: Hub globalnego systemu designu — 8 motywów (w tym Szkło glass), ThemeContext, UserMenu, shadcn mapping, checklisty. Rozdzielony na 3 sub-skille. Używaj przy pytaniach ogólnych o design system lub gdy nie wiesz którego sub-skilla użyć.
 ---
 
 # Unified Design System — Hub
@@ -27,6 +27,17 @@ Globalny system designu do ujednolicania wyglądu aplikacji React/Next.js. Zawie
 2. Użyj skill `design-system-components` → utwórz ThemeContext + UserMenu
 3. Opakuj aplikację w `<ThemeProvider>`, dodaj UserMenu do headera
 4. Użyj skill `design-system-checklist` → przetestuj na 3 motywach
+
+## Odtworzenie systemu z istniejącej strony (dembrandt)
+
+Gdy klient ma już stronę / markę pod URL i nowy projekt ma trzymać ten język wizualny —
+**wyciągnij tokeny z żywej strony zamiast zgadywać**: `npx dembrandt <url> --design-md --tailwind --wcag`
+(pilot 2026-08-16, `perelki` tier=adopt). Zwraca kolory, typografię, odstępy, pary kontrastu
+WCAG (AA/AAA) i `DESIGN.md` w ~40 s. **RTK przepisuje `npx`→`npm run`** — uruchamiaj lokalną
+binarkę: `npm i dembrandt` + jednorazowo `./node_modules/.bin/dembrandt install-browser`, potem
+`./node_modules/.bin/dembrandt <url> ...`. **Wynik to SZKIC do weryfikacji, nie źródło prawdy**:
+rozmiary czcionek wychodzą zawyżone (łapie maksima `clamp()`/skalowanie), a „primary" kolor
+wymaga sprawdzenia okiem. Świetny punkt startowy + gotowy audyt WCAG do raportu klienta.
 
 ## Kluczowe zasady
 

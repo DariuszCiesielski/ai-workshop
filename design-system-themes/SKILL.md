@@ -1,6 +1,6 @@
 ---
 name: design-system-themes
-description: Definitions of 6 themes (Classic, Dark, Glass, Minimal, Gradient, Corporate) with TypeScript interfaces and CSS custom properties. Color palettes, WCAG contrast, var(--) vs hardcoded consistency rules. Use when creating/editing themes or adding CSS variables to a project.
+description: Definitions of 8 themes (Classic, Dark, Glass, Szkło, Szkło jasne, Minimal, Gradient, Corporate) with TypeScript interfaces and CSS custom properties. Color palettes, WCAG contrast, var(--) vs hardcoded consistency rules. Use when creating/editing themes or adding CSS variables to a project.
 ---
 
 # Design System — Themes and CSS Variables
@@ -30,10 +30,16 @@ themes/
 ├── default.ts           # Light theme (Classic)
 ├── dark.ts              # Dark theme
 ├── glass.ts             # Glassmorphism theme (default)
+├── szklo.ts             # Szkło — glassmorphism ciemny, akcent indygo, bez zieleni
+├── szklo-light.ts       # Szkło jasne — ten sam język, tryb jasny
 ├── minimal.ts           # Minimalist theme
 ├── gradient.ts          # Gradient theme
 └── corporate.ts         # Corporate theme
 ```
+
+> **Podgląd wizualny motywu „Szkło":** `references/szklo-preview.html` (zatwierdzony 2026-08-16). Otwórz w przeglądarce — pokazuje oba tryby + przełącznik akcentu. Zawiera sygnaturę typograficzną (monospace) i tło z poświatą, których interfejs `ThemeColors` nie obejmuje (patrz nota pod definicjami).
+
+> **Mechanika wdrożenia szkła (OBOWIĄZKOWA lektura przy adopcji motywów `szklo`/`szklo-light` w aplikacji):** `references/szklo-mechanika.md` — tokeny `--glass-backdrop` z fallbackiem zerowego kosztu, pułapka minifikatora Lightning CSS (sam `-webkit-` w dist → Chromium bez rozmycia), fallbacki @supports/`prefers-reduced-transparency`/print/mobile, portale (stacking context — usterka niewykrywalna kolorami), twarde zasady czytelności (worst-case kontrastu) i wydajności (blur tylko kontenery, ≤8 powierzchni), checklista odbioru. Destylacja z produkcyjnych wdrożeń glassmorphism 07-08.2026 (adopcja 16.08).
 
 ---
 
@@ -114,7 +120,7 @@ export interface Theme {
   effects?: ThemeEffects;
 }
 
-export type ThemeId = 'default' | 'dark' | 'glass' | 'minimal' | 'gradient' | 'corporate';
+export type ThemeId = 'default' | 'dark' | 'glass' | 'szklo' | 'szklo-light' | 'minimal' | 'gradient' | 'corporate';
 ```
 
 ---
@@ -286,6 +292,129 @@ export const glassTheme: Theme = {
 };
 ```
 
+### themes/szklo.ts (Szkło — glassmorphism ciemny, akcent indygo)
+
+Wartości oryginalne (odtworzone z wyrenderowanego wyglądu, nie skopiowany żaden hex).
+**Zieleń usunięta w całości** — także z semantyki: `success` = niebieski, nie zielony.
+
+```typescript
+import { Theme } from './types';
+
+export const szkloTheme: Theme = {
+  id: 'szklo',
+  name: 'Szkło',
+  description: 'Glassmorphism ciemny, monospace-forward, akcent indygo',
+  colors: {
+    bgPrimary: '#070A11',
+    bgSecondary: 'rgba(24, 31, 46, 0.55)',
+    bgTertiary: 'rgba(20, 27, 41, 0.42)',
+    bgAccent: 'rgba(40, 50, 70, 0.5)',
+
+    sidebarBg: 'rgba(10, 14, 22, 0.7)',
+    sidebarText: '#AAB7CA',
+    sidebarHover: 'rgba(255, 255, 255, 0.055)',
+    sidebarActive: '#5A63E6',
+
+    headerBg: 'rgba(10, 14, 22, 0.6)',
+    headerGradient: 'linear-gradient(135deg, rgba(90,99,230,0.18) 0%, rgba(10,14,22,0.6) 55%, rgba(31,74,112,0.18) 100%)',
+    headerText: '#E7EDF6',
+
+    textPrimary: '#E7EDF6',
+    textSecondary: '#AAB7CA',
+    textMuted: '#6A7A92',
+    textInverse: '#FFFFFF',
+
+    borderPrimary: 'rgba(255, 255, 255, 0.12)',
+    borderSecondary: 'rgba(255, 255, 255, 0.20)',
+    borderAccent: '#7C86F0',
+
+    accentPrimary: '#5A63E6',
+    accentHover: '#7078F0',
+    accentLight: 'rgba(90, 99, 230, 0.20)',
+
+    // Bez zieleni — success = niebieski
+    success: '#4AA3EC', successLight: 'rgba(74, 163, 236, 0.18)',
+    warning: '#E0A23A', warningLight: 'rgba(224, 162, 58, 0.18)',
+    error: '#F0605B', errorLight: 'rgba(240, 96, 91, 0.18)',
+    info: '#5BA6E8', infoLight: 'rgba(91, 166, 232, 0.18)',
+
+    shadow: '0 2px 10px rgba(0,0,0,0.35)',
+    shadowLg: '0 18px 48px rgba(0,0,0,0.5)',
+    overlay: 'rgba(0, 0, 0, 0.6)',
+    glassBg: 'rgba(24, 31, 46, 0.55)',
+    blur: '18px',
+
+    scrollbarTrack: 'rgba(30, 41, 59, 0.5)',
+    scrollbarThumb: 'rgba(100, 116, 139, 0.5)',
+    scrollbarThumbHover: 'rgba(148, 163, 184, 0.5)',
+  },
+  effects: { glassmorphism: true, backdropBlur: true, softShadows: true }
+};
+```
+
+### themes/szklo-light.ts (Szkło jasne — ten sam język, tryb jasny)
+
+```typescript
+import { Theme } from './types';
+
+export const szkloLightTheme: Theme = {
+  id: 'szklo-light',
+  name: 'Szkło jasne',
+  description: 'Glassmorphism jasny, monospace-forward, akcent indygo',
+  colors: {
+    bgPrimary: '#E7EBF3',
+    bgSecondary: 'rgba(255, 255, 255, 0.55)',
+    bgTertiary: 'rgba(255, 255, 255, 0.42)',
+    bgAccent: 'rgba(255, 255, 255, 0.7)',
+
+    sidebarBg: 'rgba(255, 255, 255, 0.55)',
+    sidebarText: '#46566B',
+    sidebarHover: 'rgba(20, 32, 54, 0.06)',
+    sidebarActive: '#5A63E6',
+
+    headerBg: 'rgba(255, 255, 255, 0.55)',
+    headerGradient: 'linear-gradient(135deg, rgba(90,99,230,0.12) 0%, rgba(255,255,255,0.55) 55%, rgba(47,130,214,0.10) 100%)',
+    headerText: '#1B2431',
+
+    textPrimary: '#1B2431',
+    textSecondary: '#46566B',
+    textMuted: '#7D8BA1',
+    textInverse: '#FFFFFF',
+
+    borderPrimary: 'rgba(255, 255, 255, 0.85)',
+    borderSecondary: 'rgba(20, 32, 54, 0.10)',
+    borderAccent: '#5A63E6',
+
+    accentPrimary: '#5A63E6',
+    accentHover: '#4249C9',
+    accentLight: 'rgba(90, 99, 230, 0.14)',
+
+    // Bez zieleni — success = niebieski
+    success: '#2E86D8', successLight: 'rgba(46, 134, 216, 0.14)',
+    warning: '#C4801A', warningLight: 'rgba(196, 128, 26, 0.14)',
+    error: '#D2443F', errorLight: 'rgba(210, 68, 63, 0.14)',
+    info: '#2F82D6', infoLight: 'rgba(47, 130, 214, 0.14)',
+
+    shadow: '0 2px 8px rgba(20,30,55,0.08)',
+    shadowLg: '0 14px 40px rgba(20,30,55,0.10)',
+    overlay: 'rgba(20, 30, 55, 0.4)',
+    glassBg: 'rgba(255, 255, 255, 0.55)',
+    blur: '18px',
+
+    scrollbarTrack: 'rgba(20, 32, 54, 0.06)',
+    scrollbarThumb: 'rgba(120, 139, 161, 0.5)',
+    scrollbarThumbHover: 'rgba(70, 86, 107, 0.5)',
+  },
+  effects: { glassmorphism: true, backdropBlur: true, softShadows: true }
+};
+```
+
+> **Sygnatura „Szkło" poza `ThemeColors`** (interfejs trzyma tylko kolory — te dwa elementy aplikuje się CSS-em na warstwie aplikacji):
+> 1. **Typografia monospace-forward** — liczby, etykiety, tabele czcionką o stałej szerokości; nagłówki bezszeryfowe dla kontrastu. Stack: `--mono: ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace` · `--sans: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif`. Etykiety WERSALIKAMI z `letter-spacing:.1em`.
+> 2. **Tło z poświatą** — 2-3 rozmyte plamy radialne (`filter:blur(70px)`, `opacity:.55` jasny / `.4` ciemny) w kolorze akcentu, przypięte do `accentPrimary`, żeby szkło miało co refraktować. Bez tego frost jest płaski. Pełny kod: `references/szklo-preview.html`.
+>
+> **Akcent jako parametr:** podgląd pokazuje 4 kolory (indygo domyślny, fiolet, błękit, bursztyn) przełączane atrybutem `data-accent`. Wybrany dla ekosystemu: **indygo `#5A63E6`**.
+
 ### themes/index.ts
 
 ```typescript
@@ -293,14 +422,16 @@ import { Theme } from './types';
 import { defaultTheme } from './default';
 import { darkTheme } from './dark';
 import { glassTheme } from './glass';
+import { szkloTheme } from './szklo';
+import { szkloLightTheme } from './szklo-light';
 // ... import minimalTheme, gradientTheme, corporateTheme
 
 export const themes: Theme[] = [
-  defaultTheme, darkTheme, glassTheme,
+  defaultTheme, darkTheme, glassTheme, szkloTheme, szkloLightTheme,
   // minimalTheme, gradientTheme, corporateTheme,
 ];
 
-export { defaultTheme, darkTheme, glassTheme };
+export { defaultTheme, darkTheme, glassTheme, szkloTheme, szkloLightTheme };
 export type { Theme, ThemeId, ThemeColors, ThemeEffects } from './types';
 
 export const getThemeById = (id: string): Theme => {

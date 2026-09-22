@@ -17,6 +17,8 @@ Zapisz stan bieżącej pracy i wygeneruj instrukcję handoff dla kolejnej sesji 
 
 ### 1. Zbierz stan
 
+**Faza analizy PRZED pisaniem (obowiązkowa — wzorzec z vscode-copilot-chat, 27.08):** zanim napiszesz handoff, przejdź konwersację CHRONOLOGICZNIE i wynotuj: (a) mapę intencji Dariusza z **DOSŁOWNYMI cytatami jego poleceń** (nie parafrazą — parafraza gubi niuanse przy wznowieniu), (b) inwentarz techniczny (pliki/commity/komendy), (c) ocenę postępu per zadanie. Handoff pisany „z pamięci" bez tej fazy gubi dokładnie to, co §40 próbuje ratować.
+
 Przeanalizuj bieżącą konwersację i zbierz:
 
 | Element | Co zebrać |
@@ -28,6 +30,7 @@ Przeanalizuj bieżącą konwersację i zbierz:
 | **Decyzje** | Kluczowe decyzje i ich uzasadnienia |
 | **Blokery** | Problemy, errory, rzeczy do rozwiązania |
 | **Zmienione pliki** | `git diff --name-only` + `git status` |
+| **Ostatnie operacje** | Co robiłeś w ~3 ostatnich turach przed handoffem (komendy + wyniki) — to ginie pierwsze przy cięciu kontekstu, a następna sesja zaczyna dokładnie tam |
 | **Następny krok** | Konkretna pierwsza akcja dla następnej sesji |
 
 ### 2. Zapisz do memory
@@ -100,6 +103,18 @@ Zanim zaczniesz zbierać stan, uruchom:
 - Sensowne samodzielnie → zacommituj z normalnym komunikatem
 - Work-in-progress → zacommituj z prefixem: `[WIP] [handoff] Opis stanu`
 - Eksperymentalne → opisz w handoffie bez commitowania
+
+## DoD dokumentacji (5 pytań, dodane 2026-08-23 — Faza A „kontrakt → ADR → reguły → wynik")
+
+Zanim zapiszesz handoff EOS w projekcie, który ma `PROJECT_CARD.md` (lub powinien mieć — klient/produkt/narzędzie z automatami), odpowiedz na 5 pytań. „Nie" bez powodu = zrób TERAZ (każde <5 min), nie „w następnej sesji":
+
+1. **Karta aktualna?** — sekcja 8 (stan) ma wpis z dzisiejszą datą, `last_touched` w frontmatter = dziś. Jeśli sesja zamknęła etap → sekcja 4 (zmierzone/data/źródło) i 11 (wynik).
+2. **Decyzja → ADR?** — czy padła dziś decyzja o trwałych konsekwencjach (architektura, dostawca, licencja, kryterium, rezygnacja)? Tak → wpis w `docs/DECISIONS.md` (MADR-lite, szablon `cross-project-onboarder/templates/DECISIONS-template.md`) **+ zdanie MUST/MUST NOT w CLAUDE.md projektu** (sekcja „Reguły z decyzji").
+3. **Kryterium → wynik?** — czy coś zmierzyliśmy? Tak → liczba z datą i źródłem przy `KRYT-x.y` w karcie, nie tylko w handoffie.
+4. **Źródło zewnętrzne → licencja?** — czy wzięliśmy ideę/kod/dane z cudzego repo? Tak → wiersz w sekcji 7 karty (licencja z pliku LICENSE, nie z API; `NOASSERTION` = nie rozpoznano, przeczytaj plik).
+5. **Handoff → Refs?** — handoff i commity z tej sesji mają `Refs: ADR-n KRYT-x.y` tam, gdzie dotyczą kryterium/decyzji.
+
+Projekt BEZ karty → **ścieżka szybka:** draft karty-minimum (frontmatter + sekcje 2, 3, 4 z ≥1 kryterium, 7, 10) oznaczony `card_kind: rekonstrukcja`, Dariusz zatwierdza przy następnym planie dnia. Szablon: `cross-project-onboarder/templates/PROJECT_CARD-v2.md`.
 
 ## Szablony wg typu pracy
 

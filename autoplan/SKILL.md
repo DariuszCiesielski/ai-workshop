@@ -52,7 +52,7 @@ Skill pyta **raz** jeśli wejście niejasne ("Czy review dotyczy planu w [ście�
 - Accessibility (WCAG 2.2): kontrast, focus states, keyboard navigation?
 - Skeleton loaders / loading states zaplanowane?
 
-### Perspektywa 3 — Architektura (skill: `architecture-designer`)
+### Perspektywa 3 — Architektura (skill: `superpowers:brainstorming`)
 **Pytania:**
 - Stack zgodny z ekosystemem (Next.js App Router + Supabase + Tailwind v4)?
 - Edge runtime jako default (lesson [2026-04-27]) — chyba że Node deps niezbędne?

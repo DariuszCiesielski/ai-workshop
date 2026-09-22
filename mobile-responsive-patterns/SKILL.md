@@ -1,6 +1,6 @@
 ---
 name: mobile-responsive-patterns
-description: Comprehensive mobile responsive patterns for React/Next.js apps. Prevents overflow, orientation change bugs, and WebView issues. Use when creating new projects or auditing existing ones.
+description: 'Wzorce responsywności dla aplikacji React/Next.js — DWIE warstwy. Warstwa układu (sekcje 1-11) zapobiega overflow, błędom przy obrocie ekranu i usterkom WebView. Warstwa urządzenia (sekcja 12, iOS/Safari/PWA) pokrywa rzeczy, których emulator NIE odtwarza: samoczynne powiększanie strony przy polach < 16 px, safe-area na ekranie z wyspą, klawiaturę zasłaniającą pole, tabele rozpychające stronę, martwy SpeechRecognition w zainstalowanej PWA. Używaj przy nowych projektach, audycie mobilnym, zgłoszeniu „ekran się rozszerzył"/„za szerokie na iPhonie", oraz ZAWSZE gdy projektujesz funkcję głosową dla telefonu.'
 triggers:
   - "dodaj mobile support"
   - "napraw mobile"
@@ -11,6 +11,14 @@ triggers:
   - "mobile fix"
   - "audyt mobilny"
   - "sprawdź responsywność"
+  - "ekran się rozszerzył"
+  - "za szerokie na iPhonie"
+  - "wersja na telefon"
+  - "wersja na tablet"
+  - "PWA"
+  - "Add to Home Screen"
+  - "safe area"
+  - "głos w przeglądarce na telefonie"
   - creating a new React/Next.js project
   - adding card grids or responsive layouts
   - user reports overflow on mobile
@@ -346,6 +354,71 @@ const isDesktop = useMediaQuery('(min-width: 1024px)');
 
 ---
 
+## 12. Warstwa urządzenia — iOS/Safari (empiria z fizycznego iPhone'a)
+
+Sekcje 1–11 dotyczą **układu** (React/shadcn/grid). Ta sekcja dotyczy **zachowania urządzenia** — rzeczy, których emulator w Chromium NIE odtwarza i które wychodzą dopiero na prawdziwym telefonie. Wszystkie reguły poniżej pochodzą z usterek zgłoszonych przez Dariusza z iPhone'a (lipiec–sierpień 2026) i potwierdzonych na fizycznym urządzeniu.
+
+### 12.1 🔴 Pola formularzy minimum 16 px na telefonie — reguła profilaktyczna
+
+**Problem:** Safari na iOS **sam powiększa całą stronę** przy wejściu w kontrolkę z czcionką < 16 px. Po powiększeniu treść nie mieści się w szerokości i strona zaczyna przewijać się w bok. Człowiek zgłasza to jako **„ekran się rozszerzył"** i nie wskazuje na pole — dlatego regułę stosuje się profilaktycznie, nie po zgłoszeniu.
+
+```css
+@media (max-width: 640px) {
+  input, textarea, select { font-size: 16px !important; }
+}
+```
+
+- **`!important` jest konieczne** — rozmiary pól bywają zapisane stylem inline (np. 13 px w selektorach okresu), a inline bije klasę.
+- ⚠️ **Selektory pisz szeroko: `input, textarea, select`** — NIE listą `input[type=...]`. Wyliczanie typów przepuszcza `textarea`, `search`, `tel`, `number`, `url` oraz `input` bez atrybutu `type`.
+- ⚠️ **`user-scalable=no` / `maximum-scale=1` to ZŁA naprawa** — usuwa objaw, odbierając możliwość powiększenia strony (narusza WCAG 1.4.4).
+- Dotyczy **całej** aplikacji, także ekranu logowania — samo pole hasła w apce „bez formularzy" wystarczy, żeby usterka wystąpiła.
+- To reguła dostępnościowa dla jednego breakpointu, **nie element systemu tokenów** — na desktopie nie zmienia nic.
+
+### 12.2 Safe-area — obowiązkowa w każdej aplikacji instalowalnej
+
+Aplikacja ze `status-bar-style: black-translucent` + `viewport-fit=cover`, zainstalowana na ekranie głównym, rysuje górny pasek **pod** godziną/kamerą/wyspą systemową, a stopkę pod paskiem gestów.
+
+```css
+/* górny pasek */ padding-top: env(safe-area-inset-top);
+/* stopka */      padding-bottom: calc(<własny padding> + env(safe-area-inset-bottom));
+```
+
+`env()` zwraca 0 w zwykłej przeglądarce i na desktopie — nakładka jest **neutralna poza telefonem**, więc dodawaj ją od razu, nie po zgłoszeniu. Testować na fizycznym iPhonie.
+
+### 12.3 Klawiatura zasłania pole w arkuszach przyklejonych do dołu
+
+iOS **nakłada** klawiaturę na stronę zamiast ją skrócić, więc aktywne pole chowa się pod klawiaturą. Lekarstwo: `--kb-inset` liczone z `VisualViewport` + `interactive-widget=resizes-content` w meta viewport (Android).
+
+### 12.4 Każda tabela w karcie = owijka `overflow-x: auto` + `min-width: 0`
+
+Tabele z `th` ustawionym na `nowrap` bez owijki **rozpychają całą stronę** — objaw zgłaszany jako „iPhone za szeroki". Dotyczy każdej tabeli w karcie, bez wyjątku.
+
+### 12.5 Popovery kotwiczone z POMIARU, nigdy na stałe
+
+Tooltipy i selektory kotwiczone stałą stroną (np. zawsze „w prawo") uciekają poza ekran, gdy górny pasek zawinie się na wąskim telefonie. Stronę kotwiczenia licz z pomiaru pozycji **w momencie otwarcia**.
+
+### 12.6 Dotyk: cele ≥ 44 × 44 px, odstęp ≥ 8 px
+
+Wymóg Apple HIG. Dotyczy także **hitboxów na wykresach** — punkt danych o średnicy 6 px jest nieklikalny palcem.
+
+### 12.7 Telefon to monitoring, nie analiza — degradacja zamiast skalowania
+
+- 3–4 wskaźniki w kolumnie, wykresy uproszczone, szczegóły w rozwijanych sekcjach.
+- **Degraduj, nie skaluj:** wykres słupkowy → liczba + sparkline; tabela → stos kart. Ściśnięta wersja widoku desktopowego jest bezużyteczna, nie „mniejsza".
+
+### 12.8 🔴 PWA na iOS — trzy pułapki, które zmieniają architekturę
+
+- **`SpeechRecognition` NIE działa w zainstalowanej PWA na iOS.** Wykrywanie funkcji przechodzi (API jest widoczne), ale rozpoznawanie **milczy** — działa wyłącznie w karcie Safari. `getUserMedia` w trybie standalone **działa**, więc ścieżka to: nagranie przez `MediaRecorder` → wysyłka na backend → STT po stronie serwera. **Planować od początku architektury głosowej**, nie po odkryciu, że nie działa.
+- **Push dopiero od iOS 16.4 i tylko po instalacji** na ekranie głównym.
+- **Storage czyszczony po ~7 dniach nieużywania** (ITP) — nie trzymaj krytycznego stanu wyłącznie w `localStorage`.
+- Instalacja na iOS jest **manualna** (Udostępnij → Do ekranu początkowego) — zrób własną podpowiedź: detekcja `navigator.standalone === false` + iOS w user agencie. Wymagane: `apple-touch-icon`, manifest z `display: standalone`, `theme-color`.
+
+### Test, którego nie zastąpi emulator
+
+Chromium w trybie urządzenia **nie odtwarza** żadnej z reguł 12.1–12.3 i 12.8. Jedyny wiarygodny sprawdzian to fizyczny telefon. Automat łapie sekcje 1–11; sekcja 12 wymaga człowieka z telefonem w ręku.
+
+---
+
 ## Audyt mobilny — Checklist
 
 Uruchom ten checklist na istniejącym projekcie, żeby znaleźć i naprawić problemy mobilne:
@@ -386,6 +459,19 @@ Uruchom ten checklist na istniejącym projekcie, żeby znaleźć i naprawić pro
 
 ### 8. Hooks
 - [ ] `useMediaQuery` jest SSR-safe (useState(false) → useEffect)
+
+### 9. Warstwa urządzenia — iOS/Safari (sekcja 12; emulator tego NIE łapie)
+- [ ] `input, textarea, select` mają `font-size: 16px !important` poniżej 640 px — selektory SZEROKIE, nie listą typów (12.1)
+- [ ] Brak `user-scalable=no` / `maximum-scale=1` w viewport (zła naprawa, łamie WCAG 1.4.4)
+- [ ] Ekran logowania też objęty regułą 16 px (samo pole hasła wystarczy, żeby usterka wystąpiła)
+- [ ] Górny pasek i stopka mają `env(safe-area-inset-*)` — jeśli aplikacja jest instalowalna (12.2)
+- [ ] Każda tabela w karcie ma owijkę `overflow-x: auto` + `min-width: 0` (12.4)
+- [ ] Popovery kotwiczone z pomiaru pozycji, nie stałą stroną (12.5)
+- [ ] Cele dotykowe ≥ 44 × 44 px, w tym punkty na wykresach (12.6)
+- [ ] Widok mobilny **degraduje** (liczba+sparkline, stos kart), nie skaluje desktopu (12.7)
+- [ ] Jeśli aplikacja ma funkcje głosowe: NIE opiera się na `SpeechRecognition` w PWA (12.8)
+- [ ] Krytyczny stan nie leży wyłącznie w `localStorage` (ITP czyści po ~7 dniach)
+- [ ] **Sprawdzone na fizycznym telefonie**, nie tylko w trybie urządzenia w przeglądarce
 
 ---
 

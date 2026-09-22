@@ -206,11 +206,10 @@ zamiast wymieniać pojedyncze skille — bundle ładuje cały zestaw jednym pole
 
 | Skill | Co robi | Kiedy użyć |
 |-------|---------|------------|
-| `typescript-pro` | Zaawansowane typy TS, generics, utility types | "TypeScript", "typy", "generics" |
-| `javascript-pro` | ES2023+, async/await, modules | "JavaScript", "vanilla JS" |
-| `python-pro` | Python 3.11+, async, type safety | "Python", "FastAPI" |
-| `react-expert` | React 18+, hooks, patterns | "React", "komponenty", "hooki" |
-| `nextjs-developer` | Next.js App Router, RSC, streaming | "Next.js", "app router" |
+| `vercel:react-best-practices` | React — wzorce, hooki, wydajność (plugin Vercel) | "React", "komponenty", "hooki" |
+| `vercel:nextjs` | Next.js App Router, RSC, streaming (plugin Vercel) | "Next.js", "app router" |
+
+Dla TypeScript / JavaScript / Python nie ma dedykowanego skilla (pakiet Jeffallan zarchiwizowany 10.09.2026) — odpowiadaj bez skilla.
 
 ---
 

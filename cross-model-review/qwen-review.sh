@@ -10,7 +10,8 @@
 #   QWEN_TIMEOUT  (default: 600 — 10 min, długie reviews)
 #
 # Notes:
-#   - Dodaje /no_think do promptu (CLAUDE.md gotcha — Qwen3.6 default thinking mode)
+#   - Dodaje /no_think do promptu ORAZ think:false w body (2.09.2026: samo /no_think w tekście NIE gasi
+#     rozumowania w qwen3.6 — cały tok myślenia wylądował w odpowiedzi jako zwykły tekst)
 #   - Strip-uje <think>...</think> z odpowiedzi (defensywnie, gdyby /no_think nie zadziałało)
 #   - Zwraca exit 1 gdy Ollama niedostępne lub pusty wynik
 
@@ -65,7 +66,7 @@ ${PROMPT_TEXT}"
 PAYLOAD=$(jq -n \
   --arg model "$MODEL" \
   --arg prompt "$FULL_PROMPT" \
-  '{model: $model, prompt: $prompt, stream: false, options: {temperature: 0.3, num_ctx: 32768}}')
+  '{model: $model, prompt: $prompt, stream: false, think: false, options: {temperature: 0.3, num_ctx: 32768}}')
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 

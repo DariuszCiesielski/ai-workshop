@@ -5,7 +5,7 @@ description: Migracja workflow N8N z Airtable na Supabase — zamiana nodów, ma
 
 # N8N Workflow Migration: Airtable → Supabase
 
-Skill prowadzi agenta przez migrację workflow N8N z backendu Airtable na Supabase. Obejmuje zamianę nodów, mapowanie pól, naprawę wyrażeń i testowanie. Bazuje na praktycznym doświadczeniu z migracji produkcyjnego workflow Content Writer 4.3 (66 nodów).
+Skill prowadzi agenta przez migrację workflow N8N z backendu Airtable na Supabase. Obejmuje zamianę nodów, mapowanie pól, naprawę wyrażeń i testowanie. Bazuje na praktycznym doświadczeniu z migracji ClientA Content Writer 4.3 (66 nodów).
 
 ## Kiedy używać
 

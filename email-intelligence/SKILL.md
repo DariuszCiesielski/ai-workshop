@@ -78,7 +78,7 @@ Ten skill jest uruchamiany jako subagent w tle na starcie sesji. W resume-work l
 ```
 Agent({
   description: "Email Intelligence scan",
-  subagent_type: "general-purpose",
+  subagent_type: "email-intel",  // tylko odczyt Gmaila — NIE general-purpose (decyzja 20.09.2026, patrz resume-work §4)
   prompt: "Uruchom skill email-intelligence...",
   run_in_background: true
 })
